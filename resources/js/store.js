@@ -1,12 +1,13 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import axios from 'axios'; // Asegúrate de tener axios instalado
+import axios from 'axios';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        tasks: [] // Estado inicial para las tareas
+        tasks: [],
+        users: []
     },
     mutations: {
         ADD_TASK(state, task) {
@@ -20,11 +21,17 @@ export default new Vuex.Store({
         },
         DELETE_TASK(state, taskId) {
             state.tasks = state.tasks.filter(t => t.id !== taskId);
+        },
+        SET_TASKS(state, tasks) {
+            state.tasks = tasks;
+        },
+        SET_USERS(state, users) {
+            state.users = users;
         }
     },
     actions: {
         addTask({ commit }, task) {
-            axios.post('/tasks', task)
+            return axios.post('api/tasks', task)
                 .then(response => {
                     commit('ADD_TASK', response.data);
                 })
@@ -32,22 +39,40 @@ export default new Vuex.Store({
                     console.error("Error adding task:", error);
                 });
         },
-        updateTask({ commit }, task) {
-            axios.put(`/tasks/${task.id}`, task)
+        completeTask({ commit }, taskId) {
+            return axios.patch(`api/tasks/${taskId}/complete`)
                 .then(response => {
                     commit('UPDATE_TASK', response.data);
                 })
                 .catch(error => {
-                    console.error("Error updating task:", error);
+                    console.error("Error completing task:", error);
                 });
         },
         deleteTask({ commit }, taskId) {
-            axios.delete(`/tasks/${taskId}`)
+            return axios.delete(`api/tasks/${taskId}`)
                 .then(() => {
                     commit('DELETE_TASK', taskId);
                 })
                 .catch(error => {
                     console.error("Error deleting task:", error);
+                });
+        },
+        fetchUsers({ commit }) {
+            return axios.get('api/users')
+                .then(response => {
+                    commit('SET_USERS', response.data);
+                })
+                .catch(error => {
+                    console.error("Error fetching users:", error);
+                });
+        },
+        fetchTasks({ commit }) {
+            return axios.get('api/tasks')
+                .then(response => {
+                    commit('SET_TASKS', response.data);
+                })
+                .catch(error => {
+                    console.error("Error fetching tasks:", error);
                 });
         }
     },

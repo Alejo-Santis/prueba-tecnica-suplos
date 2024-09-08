@@ -1817,12 +1817,12 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
       }
     };
   },
-  computed: _objectSpread({}, (0,vuex__WEBPACK_IMPORTED_MODULE_0__.mapState)(['tasks'])),
-  methods: _objectSpread(_objectSpread({}, (0,vuex__WEBPACK_IMPORTED_MODULE_0__.mapActions)(['fetchTasks', 'addTask', 'completeTask', 'deleteTask'])), {}, {
+  computed: _objectSpread({}, (0,vuex__WEBPACK_IMPORTED_MODULE_0__.mapState)(['tasks', 'users'])),
+  methods: _objectSpread(_objectSpread({}, (0,vuex__WEBPACK_IMPORTED_MODULE_0__.mapActions)(['fetchTasks', 'fetchUsers', 'addTask', 'completeTask', 'deleteTask'])), {}, {
     addTask: function addTask() {
       var _this = this;
-      if (!this.newTask.title || !this.newTask.description || !this.newTask.user) {
-        alert('Both title and description are required');
+      if (!this.newTask.title || !this.newTask.description || !this.newTask.user_id) {
+        alert('All fiedls are required');
         return;
       }
 
@@ -1830,7 +1830,7 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
       this.$store.dispatch('addTask', this.newTask).then(function () {
         _this.newTask.title = '';
         _this.newTask.description = '';
-        _this.newTask.user = '';
+        _this.newTask.user_id = '';
       })["catch"](function (error) {
         console.error('Error adding task:', error);
       });
@@ -1848,7 +1848,10 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
       });
     }
   }),
-  mounted: function mounted() {}
+  mounted: function mounted() {
+    this.fetchTasks();
+    this.fetchUsers();
+  }
 });
 
 /***/ }),
@@ -1869,7 +1872,7 @@ var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c("div", {
-    staticClass: "container mt-5"
+    staticClass: "container-sm mt-5"
   }, [_c("h1", {
     staticClass: "text-center mb-4"
   }, [_vm._v("Task List")]), _vm._v(" "), _c("ul", {
@@ -1880,11 +1883,13 @@ var render = function render() {
       staticClass: "list-group-item d-flex justify-content-between align-items-center"
     }, [_c("div", [_c("h5", {
       staticClass: "mb-1"
-    }, [_vm._v(_vm._s(task.title))]), _vm._v(" "), _c("p", {
+    }, [_vm._v("#" + _vm._s(task.id) + " - " + _vm._s(task.title))]), _vm._v(" "), _c("p", {
       staticClass: "mb-1"
     }, [_vm._v(_vm._s(task.description))]), _vm._v(" "), _c("small", {
       staticClass: "text-muted"
-    }, [_vm._v("Assigned to: " + _vm._s(task.user))])]), _vm._v(" "), _c("div", [_c("button", {
+    }, [_vm._v("Assigned to: "), _c("strong", [_vm._v(_vm._s(task.user ? task.user.name : "No user assigned"))])]), _vm._v(" "), _c("small", {
+      staticClass: "text-muted"
+    }, [_vm._v("Completed: "), _c("strong", [_vm._v(_vm._s(task.completed ? "Yes" : "No"))])])]), _vm._v(" "), _c("div", [_c("button", {
       staticClass: "btn btn-success btn-sm mr-2",
       on: {
         click: function click($event) {
@@ -1955,28 +1960,36 @@ var render = function render() {
     }
   })]), _vm._v(" "), _c("div", {
     staticClass: "form-group"
-  }, [_c("input", {
+  }, [_c("select", {
     directives: [{
       name: "model",
       rawName: "v-model",
-      value: _vm.newTask.user,
-      expression: "newTask.user"
+      value: _vm.newTask.user_id,
+      expression: "newTask.user_id"
     }],
     staticClass: "form-control",
     attrs: {
-      placeholder: "Assigned User",
       required: ""
     },
-    domProps: {
-      value: _vm.newTask.user
-    },
     on: {
-      input: function input($event) {
-        if ($event.target.composing) return;
-        _vm.$set(_vm.newTask, "user", $event.target.value);
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.$set(_vm.newTask, "user_id", $event.target.multiple ? $$selectedVal : $$selectedVal[0]);
       }
     }
-  })]), _vm._v(" "), _c("button", {
+  }, _vm._l(_vm.users, function (user) {
+    return _c("option", {
+      key: user.id,
+      domProps: {
+        value: user.id
+      }
+    }, [_vm._v(_vm._s(user.name))]);
+  }), 0)]), _vm._v(" "), _c("button", {
     staticClass: "btn btn-primary btn-block",
     attrs: {
       type: "submit"
@@ -2040,12 +2053,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
 
 
- // Asegúrate de tener axios instalado
 
 vue__WEBPACK_IMPORTED_MODULE_1__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_2__["default"]);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (new vuex__WEBPACK_IMPORTED_MODULE_2__["default"].Store({
   state: {
-    tasks: [] // Estado inicial para las tareas
+    tasks: [],
+    users: []
   },
   mutations: {
     ADD_TASK: function ADD_TASK(state, task) {
@@ -2063,31 +2076,53 @@ vue__WEBPACK_IMPORTED_MODULE_1__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_2_
       state.tasks = state.tasks.filter(function (t) {
         return t.id !== taskId;
       });
+    },
+    SET_TASKS: function SET_TASKS(state, tasks) {
+      state.tasks = tasks;
+    },
+    SET_USERS: function SET_USERS(state, users) {
+      state.users = users;
     }
   },
   actions: {
     addTask: function addTask(_ref, task) {
       var commit = _ref.commit;
-      axios__WEBPACK_IMPORTED_MODULE_0___default().post('/tasks', task).then(function (response) {
+      return axios__WEBPACK_IMPORTED_MODULE_0___default().post('api/tasks', task).then(function (response) {
         commit('ADD_TASK', response.data);
       })["catch"](function (error) {
         console.error("Error adding task:", error);
       });
     },
-    updateTask: function updateTask(_ref2, task) {
+    completeTask: function completeTask(_ref2, taskId) {
       var commit = _ref2.commit;
-      axios__WEBPACK_IMPORTED_MODULE_0___default().put("/tasks/".concat(task.id), task).then(function (response) {
+      return axios__WEBPACK_IMPORTED_MODULE_0___default().patch("api/tasks/".concat(taskId, "/complete")).then(function (response) {
         commit('UPDATE_TASK', response.data);
       })["catch"](function (error) {
-        console.error("Error updating task:", error);
+        console.error("Error completing task:", error);
       });
     },
     deleteTask: function deleteTask(_ref3, taskId) {
       var commit = _ref3.commit;
-      axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("/tasks/".concat(taskId)).then(function () {
+      return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("api/tasks/".concat(taskId)).then(function () {
         commit('DELETE_TASK', taskId);
       })["catch"](function (error) {
         console.error("Error deleting task:", error);
+      });
+    },
+    fetchUsers: function fetchUsers(_ref4) {
+      var commit = _ref4.commit;
+      return axios__WEBPACK_IMPORTED_MODULE_0___default().get('api/users').then(function (response) {
+        commit('SET_USERS', response.data);
+      })["catch"](function (error) {
+        console.error("Error fetching users:", error);
+      });
+    },
+    fetchTasks: function fetchTasks(_ref5) {
+      var commit = _ref5.commit;
+      return axios__WEBPACK_IMPORTED_MODULE_0___default().get('api/tasks').then(function (response) {
+        commit('SET_TASKS', response.data);
+      })["catch"](function (error) {
+        console.error("Error fetching tasks:", error);
       });
     }
   },

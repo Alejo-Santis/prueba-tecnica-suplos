@@ -8,27 +8,29 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    public function index()
+    {
+        $tasks = Task::with('user')->get();
+        return response()->json($tasks);
+    }
+
     // Crear tarea
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|max:255',
             'description' => 'required|max:500',
-            'user' => 'required|max:500',
+            'user_id' => 'required',
         ]);
 
         $task = new Task($validated);
-        $user = User::where('email',$validated['user'])->first();
-        $task->user_id = $user->id;
         $task->save();
 
-        return redirect()->back()->with('success', 'Task created successfully.');
+        return response()->json($task, 201);
     }
 
-    // Actualizar tarea
     public function update(Request $request, $id)
     {
-
         $validated = $request->validate([
             'title' => 'required|max:255',
             'description' => 'required|max:500',
@@ -36,26 +38,39 @@ class TaskController extends Controller
 
         $task = Task::find($id);
 
-        if(!$task) {
-            return redirect()->back()->with('error', 'Task not found.');
+        if (!$task) {
+            return response()->json(['error' => 'Task not found.'], 404);
         }
 
-        // Corrección: Se actualiza la tarea con datos validados.
         $task->update($validated);
-        return redirect()->back()->with('success', 'Task updated successfully.');
+
+        return response()->json($task);
     }
 
-    // Eliminar tarea
+    public function markAsCompleted($id)
+    {
+        $task = Task::find($id);
+
+        if (!$task) {
+            return response()->json(['error' => 'Task not found.'], 404);
+        }
+
+        $task->completed = true;
+        $task->save();
+
+        return response()->json($task);
+    }
+
     public function destroy($id)
     {
         $task = Task::find($id);
 
-        if(!$task) {
-            return redirect()->back()->with('error', 'Task not found.');
+        if (!$task) {
+            return response()->json(['error' => 'Task not found.'], 404);
         }
 
         $task->delete();
 
-        return redirect()->back()->with('success', 'Task deleted successfully.');
+        return response()->json(['success' => 'Task deleted successfully.']);
     }
 }

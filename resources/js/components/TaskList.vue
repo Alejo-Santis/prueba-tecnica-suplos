@@ -1,12 +1,14 @@
 <template>
-    <div class="container mt-5">
+    <div class="container-sm mt-5">
         <h1 class="text-center mb-4">Task List</h1>
         <ul class="list-group mb-4">
-            <li v-for="task in tasks" :key="task.id" class="list-group-item d-flex justify-content-between align-items-center">
+            <li v-for="task in tasks" :key="task.id"
+                class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="mb-1">{{ task.title }}</h5>
+                    <h5 class="mb-1">#{{ task.id }} - {{ task.title }}</h5>
                     <p class="mb-1">{{ task.description }}</p>
-                    <small class="text-muted">Assigned to: {{ task.user }}</small>
+                    <small class="text-muted">Assigned to: <strong>{{ task.user ? task.user.name : 'No user assigned' }}</strong></small>                    
+                    <small class="text-muted">Completed: <strong>{{ task.completed ? 'Yes' : 'No' }}</strong></small>
                 </div>
                 <div>
                     <button class="btn btn-success btn-sm mr-2" @click="completeTask(task.id)">Complete</button>
@@ -22,7 +24,9 @@
                 <input v-model="newTask.description" class="form-control" placeholder="Task Description" required>
             </div>
             <div class="form-group">
-                <input v-model="newTask.user" class="form-control" placeholder="Assigned User" required>
+                <select v-model="newTask.user_id" class="form-control" required>
+                    <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Add Task</button>
         </form>
@@ -43,13 +47,13 @@ export default {
         };
     },
     computed: {
-        ...mapState(['tasks']) // Simplificado para mapState
+        ...mapState(['tasks', 'users']) // Simplificado para mapState
     },
     methods: {
-        ...mapActions(['fetchTasks', 'addTask', 'completeTask', 'deleteTask']),
+        ...mapActions(['fetchTasks', 'fetchUsers', 'addTask', 'completeTask', 'deleteTask']),
         addTask() {
-            if (!this.newTask.title || !this.newTask.description || !this.newTask.user) {
-                alert('Both title and description are required');
+            if (!this.newTask.title || !this.newTask.description || !this.newTask.user_id) {
+                alert('All fiedls are required');
                 return;
             }
 
@@ -57,7 +61,7 @@ export default {
             this.$store.dispatch('addTask', this.newTask).then(() => {
                 this.newTask.title = '';
                 this.newTask.description = '';
-                this.newTask.user = '';
+                this.newTask.user_id = '';
             }).catch(error => {
                 console.error('Error adding task:', error);
             });
@@ -76,7 +80,8 @@ export default {
         }
     },
     mounted() {
-
+        this.fetchTasks();
+        this.fetchUsers();
     }
 };
 </script>
