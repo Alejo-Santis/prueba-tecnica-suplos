@@ -88,15 +88,22 @@ Recuerda que el objetivo es demostrar tu capacidad para depurar y mejorar códig
 
 ## 1. **Identificación de errores y Cambios realizados**:
 
-    * Migrations: por convención las tablas deben denominarse en plural.
-    * Factories: en la clase UserFactory se estaba importando el modelo `User` de manera equivocada `use App\User -> incorrecto`, `use App\Models\User`.
-    * Models: En la clase que representa el modelo `Task` la relación con el modelo `User` estaba incorrecta se estaba definiendo así `$this->belongsTo('App\Models\User', 'user_id'); -> incorrecto` debe definirse así `return $this->belongsTo(User::class, 'user_id'); tambien se estaba validando en la asignación masiva la propiedad `user` y en la migración se define la llave forena `user_id` es decir el campo no estaba correcto.
-    * Controllers: En el TaskController en el metodo `Store` no es necesario validar un email que no se envia por el request.
-    * En la parte de frontend no estaba definido el complete task, tambien se reparo la propiedad `user` que al guardar en el front no permitia guardar el usuario pues se deberia almacenar el `user_id`.
+Migrations: por convención las tablas deben denominarse en plural.
 
-    * **Cambios**
+Factories: en la clase UserFactory se estaba importando el modelo `User` de manera equivocada `use App\User -> incorrecto`, `use App\Models\User`.
 
-    * En el archivo store se agregaron `fetchUsers`, `fetchTasks` y `completeTask`, se agrego el arreglo `users: []` para mandar los datos al componente de Vue y algunas caracteristicas para el consumo de los servicios `rest` de manera correcta en el frontend.
-    * En el componente de Vue se modificaron algunos campos primero para simular una selección o asignación de Tareas a usuarios, con usuarios Fake en el seeder de Laravel y que se presenten en el front como un select para la vista del usuario creador de las tareas en el sistema.
-    * En la parte del backend se cambiaron los metodos para que retornen las respuestas en formato `json`, tambien se modificaron las rutas del archivo `web.php` al archivo `api.php` para mejor estructuración ya que el backend debe responder en formato json y el frontend debe tomar esos datos y pintarlos en la mejor forma de trabajar en proyectos.
-    * Se creo el `UserController`para consultar información sobre los usuarios fake creados en el seeder de la aplicación.
+Models: En la clase que representa el modelo `Task` la relación con el modelo `User` estaba incorrecta se estaba definiendo así `$this->belongsTo('App\Models\User', 'user_id'); -> incorrecto` debe definirse así `return $this->belongsTo(User::class, 'user_id'); tambien se estaba validando en la asignación masiva la propiedad `user` y en la migración se define la llave forena `user_id` es decir el campo no estaba correcto.
+
+Controllers: En el TaskController en el metodo `Store` no es necesario validar un email que no se envia por el request.
+
+En la parte de frontend no estaba definido el complete task, tambien se reparo la propiedad `user` que al guardar en el front no permitia guardar el usuario pues se deberia almacenar el `user_id`.
+
+### **Cambios**
+
+En el archivo store se agregaron `fetchUsers`, `fetchTasks` y `completeTask`, se agrego el arreglo `users: []` para mandar los datos al componente de Vue y algunas caracteristicas para el consumo de los servicios `rest` de manera correcta en el frontend.
+ 
+En el componente de Vue se modificaron algunos campos primero para simular una selección o asignación de Tareas a usuarios, con usuarios Fake en el seeder de Laravel y que se presenten en el front como un select para la vista del usuario creador de las tareas en el sistema.
+ 
+En la parte del backend se cambiaron los metodos para que retornen las respuestas en formato `json`, tambien se modificaron las rutas del archivo `web.php` al archivo `api.php` para mejor estructuración ya que el backend debe responder en formato json y el frontend debe tomar esos datos y pintarlos en la mejor forma de trabajar en proyectos.
+    
+Se creo el `UserController`para consultar información sobre los usuarios fake creados en el seeder de la aplicación.
